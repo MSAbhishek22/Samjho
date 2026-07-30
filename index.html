@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Samjho — Until You Truly Understand</title>
+<meta name="description" content="Samjho — a voice-first AI tutor that doesn't stop at explaining. It listens until you truly understand. Available in English, Hindi, Tamil, Bengali and Marathi.">
+<meta property="og:title" content="Samjho — Until You Truly Understand">
+<meta property="og:description" content="A voice-first AI tutor that teaches through your world, then proves you understood it.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23C2703D'/%3E%3Ccircle cx='38' cy='40' r='10' fill='%23F6EEE0'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Tiro+Devanagari+Hindi:ital@0;1&family=Hind:wght@400;500;600;700&family=Tiro+Tamil:ital@0;1&family=Hind+Madurai:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root{
+    --cream: #F6EEE0;
+    --cream-soft: #FBF6EC;
+    --cream-deep: #EDE2CC;
+    --line: #DCCDAE;
+    --brown: #362A1E;
+    --brown-soft: #6B5442;
+    --brown-faint: #9C8A73;
+    --olive: #6E7245;
+    --olive-dark: #4F5330;
+    --olive-pale: #DCE0C4;
+    --peach: #E8A87C;
+    --peach-soft: #F3D2B8;
+    --terracotta: #C2703D;
+    --terracotta-dark: #A05A2C;
+
+    --f-display: 'Fraunces', serif;
+    --f-body: 'Manrope', sans-serif;
+    --f-accent: 'Instrument Serif', serif;
+    --f-mono: 'Space Mono', monospace;
+    --track: .16em;
+    --caps: uppercase;
+
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --container: 1180px;
+  }
+
+  html[data-lang="hi"], html[data-lang="mr"]{
+    --f-display:'Tiro Devanagari Hindi', serif;
+    --f-body:'Hind', sans-serif;
+    --f-accent:'Tiro Devanagari Hindi', serif;
+    --f-mono:'Hind', sans-serif;
+    --track: 0em; --caps: none;
+  }
+  html[data-lang="ta"]{
+    --f-display:'Tiro Tamil', serif;
+    --f-body:'Hind Madurai', sans-serif;
+    --f-accent:'Tiro Tamil', serif;
+    --f-mono:'Hind Madurai', sans-serif;
+    --track: 0em; --caps: none;
+  }
+  html[data-lang="bn"]{
+    --f-display:'Tiro Bangla', serif;
+    --f-body:'Hind Siliguri', sans-serif;
+    --f-accent:'Tiro Bangla', serif;
+    --f-mono:'Hind Siliguri', sans-serif;
+    --track: 0em; --caps: none;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  ::selection{ background:var(--terracotta); color:var(--cream-soft); }
+
+  body{
+    background:var(--cream);
+    color:var(--brown);
+    font-family:var(--f-body);
+    overflow-x:hidden;
+    cursor:none;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+  }
+  @media (hover:none){ body{ cursor:auto; } }
+
+  /* grain overlay for tactile premium finish */
+  body::after{
+    content:'';
+    position:fixed; inset:0; z-index:998;
+    pointer-events:none;
+    opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  img, svg{ display:block; max-width:100%; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; border:none; background:none; cursor:none; }
+  @media (hover:none){ button{ cursor:pointer; } }
+
+  ::-webkit-scrollbar{ width:9px; }
+  ::-webkit-scrollbar-track{ background:var(--cream); }
+  ::-webkit-scrollbar-thumb{ background:var(--olive); border-radius:10px; }
+
+  .container{ max-width:var(--container); margin:0 auto; padding:0 clamp(20px, 5vw, 64px); }
+
+  .eyebrow{
+    font-family:var(--f-mono);
+    font-size:.72rem;
+    letter-spacing:var(--track);
+    text-transform:var(--caps);
+    font-weight:600;
+    color:var(--olive-dark);
+    background:var(--olive-pale);
+    display:inline-block;
+    padding:7px 14px;
+    border-radius:100px;
+    margin-bottom:26px;
+  }
+
+  /* ============ CUSTOM CURSOR ============ */
+  .cursor-dot, .cursor-ring{ position:fixed; top:0; left:0; pointer-events:none; z-index:9999; border-radius:50%; transform:translate(-50%,-50%); will-change:transform; }
+  .cursor-dot{ width:7px; height:7px; background:var(--terracotta); transition:opacity .2s ease, background .3s ease; }
+  .cursor-ring{ width:34px; height:34px; border:1.4px solid var(--brown); opacity:.55; transition:width .35s var(--ease), height .35s var(--ease), border-color .35s ease, background .35s ease, opacity .3s ease; }
+  .cursor-ring.hovering{ width:64px; height:64px; background:rgba(110,114,69,0.1); border-color:var(--olive); }
+  .cursor-ring.listening{ border-color:var(--terracotta); background:rgba(194,112,61,0.14); width:50px; height:50px; }
+  @media (hover:none){ .cursor-dot,.cursor-ring{ display:none; } }
+
+  .ripple{
+    position:fixed; z-index:9998; pointer-events:none;
+    width:12px; height:12px; border-radius:50%;
+    border:1.4px solid var(--terracotta);
+    transform:translate(-50%,-50%);
+  }
+
+  /* ============ NAV ============ */
+  nav{ position:fixed; top:0; left:0; right:0; z-index:500; padding:20px 0; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(180deg, rgba(246,238,224,0.94), rgba(246,238,224,0)); backdrop-filter:blur(6px); }
+  nav .container{ display:flex; align-items:center; justify-content:space-between; width:100%; gap:16px; }
+  .logo{ font-family:var(--f-display); font-weight:600; font-size:1.5rem; letter-spacing:-0.01em; color:var(--brown); flex-shrink:0; }
+  .logo em{ font-style:italic; color:var(--terracotta); font-weight:500; }
+  .nav-links{ display:none; gap:34px; list-style:none; font-size:.92rem; font-weight:500; color:var(--brown-soft); }
+  @media (min-width:960px){ .nav-links{ display:flex; } }
+  .nav-links li{ position:relative; }
+  .nav-links a::after{ content:''; position:absolute; left:0; bottom:-2px; width:0%; height:1.5px; background:var(--terracotta); transition:width .35s var(--ease); }
+  .nav-links a:hover::after{ width:100%; }
+  .nav-links a:hover{ color:var(--brown); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+
+  .btn{ display:inline-flex; align-items:center; gap:10px; font-family:var(--f-body); font-weight:700; font-size:.9rem; padding:13px 26px; border-radius:100px; position:relative; overflow:hidden; isolation:isolate; white-space:nowrap; }
+  .btn-primary{ background:var(--brown); color:var(--cream-soft); }
+  .btn-primary::before{ content:''; position:absolute; inset:0; background:var(--terracotta); transform:translateY(101%); transition:transform .45s var(--ease); z-index:-1; }
+  .btn-primary:hover::before{ transform:translateY(0); }
+  .btn-ghost{ border:1.4px solid var(--brown-faint); color:var(--brown); }
+  .btn-ghost:hover{ border-color:var(--brown); background:var(--cream-deep); }
+  .btn-sm{ padding:9px 18px; font-size:.82rem; }
+  .btn[disabled]{ opacity:.4; pointer-events:none; }
+  .nav-cta{ display:none; }
+  @media (min-width:640px){ .nav-cta{ display:inline-flex; } }
+
+  /* language switcher */
+  .lang-switch{ position:relative; }
+  .lang-current{
+    font-family:var(--f-mono); font-size:.78rem; font-weight:700;
+    display:flex; align-items:center; gap:6px;
+    padding:9px 14px; border-radius:100px;
+    border:1.3px solid var(--brown-faint);
+    color:var(--brown);
+  }
+  .lang-current:hover{ border-color:var(--brown); }
+  .lang-menu{
+    position:absolute; top:calc(100% + 10px); right:0;
+    background:var(--cream-soft);
+    border:1.3px solid var(--line);
+    border-radius:16px;
+    padding:8px;
+    min-width:160px;
+    box-shadow:0 24px 50px -20px rgba(54,42,30,0.3);
+    opacity:0; visibility:hidden; transform:translateY(-8px);
+    transition:all .3s var(--ease);
+    z-index:600;
+  }
+  .lang-menu.open{ opacity:1; visibility:visible; transform:translateY(0); }
+  .lang-menu button{
+    width:100%; text-align:left;
+    padding:10px 12px; border-radius:10px;
+    font-size:.9rem; font-weight:500; color:var(--brown-soft);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .lang-menu button:hover{ background:var(--cream-deep); color:var(--brown); }
+  .lang-menu button.active{ color:var(--terracotta-dark); font-weight:700; }
+  .lang-menu button .tag{ font-family:var(--f-mono); font-size:.68rem; color:var(--brown-faint); }
+
+  .menu-toggle{ display:flex; width:42px; height:42px; border-radius:50%; background:var(--cream-deep); align-items:center; justify-content:center; flex-shrink:0; }
+  @media (min-width:960px){ .menu-toggle{ display:none; } }
+
+  /* mobile drawer */
+  .drawer{
+    position:fixed; inset:0; z-index:900;
+    background:var(--brown);
+    display:flex; flex-direction:column;
+    justify-content:center;
+    padding:40px clamp(24px,8vw,60px);
+    transform:translateX(100%);
+    transition:transform .5s var(--ease);
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-close{
+    position:absolute; top:24px; right:24px;
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(246,238,224,0.1); color:var(--cream);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .drawer ul{ list-style:none; display:flex; flex-direction:column; gap:28px; }
+  .drawer a{ font-family:var(--f-display); font-size:2rem; color:var(--cream-soft); font-weight:500; }
+  .drawer .drawer-cta{ margin-top:40px; }
+
+  /* ============ HERO ============ */
+  .hero{ position:relative; min-height:100svh; display:flex; align-items:center; padding-top:90px; overflow:hidden; }
+  #hero-canvas{ position:absolute; top:0; right:0; width:100%; height:100%; z-index:0; opacity:.95; }
+  .hero-content{ position:relative; z-index:2; max-width:640px; }
+  h1{ font-family:var(--f-display); font-weight:500; font-size:clamp(2.5rem, 6.4vw, 5rem); line-height:1.03; letter-spacing:-0.02em; color:var(--brown); }
+  h1 em{ font-style:italic; font-weight:500; color:var(--terracotta); }
+  .hero-content p{ margin-top:26px; font-size:clamp(1rem, 1.6vw, 1.18rem); line-height:1.6; color:var(--brown-soft); max-width:520px; }
+  .hero-cta{ margin-top:40px; display:flex; gap:18px; flex-wrap:wrap; align-items:center; }
+  .play-hint{ display:flex; align-items:center; gap:12px; font-size:.88rem; color:var(--brown-soft); font-weight:500; }
+  .play-hint .dot{ width:9px; height:9px; border-radius:50%; background:var(--terracotta); animation:pulse-dot 1.8s ease-in-out infinite; }
+  @keyframes pulse-dot{ 0%,100%{ transform:scale(1); opacity:1;} 50%{ transform:scale(1.6); opacity:.4;} }
+
+  .orbit-wrap{ position:absolute; top:50%; right:6%; width:min(46vw,540px); height:min(46vw,540px); transform:translateY(-50%); pointer-events:none; z-index:1; }
+  @media (max-width:960px){ .orbit-wrap{ display:none; } }
+  .orbit-wrap svg{ width:100%; height:100%; animation:spin 34s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .scroll-cue{ position:absolute; bottom:34px; left:50%; transform:translateX(-50%); z-index:2; display:flex; flex-direction:column; align-items:center; gap:8px; font-family:var(--f-mono); font-size:.68rem; letter-spacing:var(--track); text-transform:var(--caps); color:var(--brown-faint); }
+  .scroll-cue .line{ width:1px; height:38px; background:linear-gradient(var(--brown-faint), transparent); animation:scroll-move 1.8s ease-in-out infinite; }
+  @keyframes scroll-move{ 0%{ transform:scaleY(0); transform-origin:top; } 50%{ transform:scaleY(1); transform-origin:top; } 51%{ transform-origin:bottom; } 100%{ transform:scaleY(0); transform-origin:bottom; } }
+
+  section{ position:relative; padding:clamp(80px,12vw,160px) 0; }
+  .section-head{ max-width:680px; margin-bottom:clamp(48px,6vw,80px); }
+  .section-head .eyebrow{ background:var(--peach-soft); color:var(--terracotta-dark); }
+  h2{ font-family:var(--f-display); font-weight:500; font-size:clamp(1.9rem, 4.2vw, 3.1rem); line-height:1.12; letter-spacing:-0.015em; }
+  h2 em{ font-style:italic; color:var(--olive-dark); font-weight:500; }
+  .section-head p{ margin-top:20px; font-size:1.05rem; color:var(--brown-soft); line-height:1.65; }
+
+  .insight{ background:var(--cream-deep); }
+  .insight-line{ font-family:var(--f-accent); font-style:italic; font-size:clamp(1.5rem, 3.6vw, 2.6rem); line-height:1.4; max-width:900px; color:var(--brown); }
+  .insight-line .hl{ color:var(--terracotta); }
+  .stat-row{ margin-top:64px; display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:32px; }
+  .stat{ border-top:1.4px solid var(--brown-faint); padding-top:20px; }
+  .stat .num{ font-family:var(--f-display); font-size:clamp(2.2rem,4vw,3.2rem); font-weight:500; color:var(--olive-dark); }
+  .stat .label{ font-family:var(--f-mono); font-size:.78rem; color:var(--brown-soft); margin-top:6px; letter-spacing:.02em; }
+
+  .loop-wrap{ display:grid; grid-template-columns:1fr; gap:20px; }
+  @media (min-width:960px){ .loop-wrap{ grid-template-columns:.85fr 1.15fr; gap:40px; align-items:start; } }
+  .step-list{ display:flex; flex-direction:column; gap:10px; }
+  .step-item{ padding:22px 24px; border-radius:20px; border:1.4px solid transparent; transition:background .4s var(--ease), border-color .4s ease, transform .3s ease; display:flex; gap:18px; align-items:flex-start; }
+  .step-item:hover{ transform:translateX(4px); }
+  .step-item.active{ background:var(--cream-soft); border-color:var(--line); box-shadow:0 20px 45px -25px rgba(54,42,30,0.25); }
+  .step-num{ font-family:var(--f-mono); font-size:.78rem; color:var(--brown-faint); padding-top:4px; min-width:28px; font-weight:600; }
+  .step-item.active .step-num{ color:var(--terracotta); font-weight:700; }
+  .step-title{ font-family:var(--f-display); font-size:1.18rem; font-weight:500; color:var(--brown); margin-bottom:6px; }
+  .step-desc{ font-size:.94rem; color:var(--brown-soft); line-height:1.55; }
+
+  .demo-stage{ background:var(--brown); border-radius:28px; padding:clamp(24px,3.4vw,42px); min-height:480px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden; color:var(--cream); transform-style:preserve-3d; }
+  .demo-stage::before{ content:''; position:absolute; inset:0; background:radial-gradient(circle at 80% 0%, rgba(232,168,124,0.14), transparent 60%); pointer-events:none; }
+  .demo-top{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .demo-tag{ font-family:var(--f-mono); font-size:.7rem; letter-spacing:var(--track); text-transform:var(--caps); color:var(--peach-soft); display:flex; align-items:center; gap:8px; font-weight:700;}
+  .demo-tag .rec{ width:7px;height:7px;border-radius:50%;background:var(--terracotta); animation:pulse-dot 1.6s ease-in-out infinite; }
+  .demo-body{ margin:26px 0; min-height:220px; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  .chip{ font-size:.85rem; font-weight:600; padding:9px 18px; border-radius:100px; border:1.3px solid rgba(246,238,224,0.28); color:var(--cream); transition:all .3s var(--ease); }
+  .chip.selected, .chip:hover{ background:var(--peach); color:var(--brown); border-color:var(--peach); }
+  .bubble{ background:rgba(246,238,224,0.08); border:1px solid rgba(246,238,224,0.16); border-radius:18px 18px 18px 4px; padding:20px 22px; font-size:.98rem; line-height:1.65; color:var(--cream-soft); max-width:94%; }
+  .bubble.mine{ border-radius:18px 18px 4px 18px; margin-left:auto; background:rgba(232,168,124,0.14); border-color:rgba(232,168,124,0.3); }
+  .bubble + .bubble{ margin-top:14px; }
+
+  .listen-btn{ display:inline-flex; align-items:center; gap:8px; margin-top:16px; font-size:.82rem; font-weight:700; padding:8px 16px; border-radius:100px; border:1.3px solid rgba(246,238,224,0.3); color:var(--peach-soft); }
+  .listen-btn:hover{ border-color:var(--peach); background:rgba(232,168,124,0.12); }
+  .listen-btn.speaking .eq span{ animation-play-state:running; }
+  .eq{ display:flex; gap:2px; align-items:center; height:10px; }
+  .eq span{ width:2.4px; background:var(--peach-soft); border-radius:2px; animation:wave 1s ease-in-out infinite; animation-play-state:paused; }
+
+  .mic-demo{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .mic-btn{ width:58px; height:58px; border-radius:50%; background:var(--terracotta); display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0; }
+  .mic-btn.active{ background:#D9502A; }
+  .mic-btn .ring{ position:absolute; inset:0; border-radius:50%; border:1.5px solid var(--terracotta); opacity:0; }
+  .mic-btn.active .ring{ animation:mic-pulse 2s ease-out infinite; opacity:1; }
+  .mic-btn .ring:nth-child(2){ animation-delay:.6s; }
+  @keyframes mic-pulse{ 0%{ transform:scale(1); opacity:.7;} 100%{ transform:scale(1.9); opacity:0;} }
+  .wave-bars{ display:flex; align-items:center; gap:4px; height:32px; }
+  .wave-bars span{ width:3.5px; border-radius:3px; background:var(--peach); animation:wave 1.2s ease-in-out infinite; animation-play-state:paused; }
+  .wave-bars.live span{ animation-play-state:running; }
+  @keyframes wave{ 0%,100%{ height:8px; } 50%{ height:28px; } }
+  .live-transcript{ font-size:.92rem; color:var(--cream-soft); min-height:24px; font-style:italic; opacity:.85; }
+  .fallback-input{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .fallback-input input{ flex:1; min-width:180px; background:rgba(246,238,224,0.08); border:1px solid rgba(246,238,224,0.24); border-radius:100px; padding:12px 18px; color:var(--cream-soft); font-family:var(--f-body); font-size:.92rem; }
+  .fallback-input input::placeholder{ color:rgba(246,238,224,0.45); }
+  .fallback-input input:focus{ outline:none; border-color:var(--peach); }
+
+  .verdict{ display:flex; align-items:center; gap:14px; padding:16px 18px; border-radius:16px; background:rgba(110,114,69,0.18); border:1px solid rgba(110,114,69,0.4); }
+  .verdict.gap{ background:rgba(194,112,61,0.16); border-color:rgba(194,112,61,0.4); }
+  .verdict-icon{ width:34px;height:34px;border-radius:50%; display:flex;align-items:center;justify-content:center; background:var(--olive-pale); color:var(--olive-dark); font-weight:700; flex-shrink:0; }
+  .verdict.gap .verdict-icon{ background:var(--peach-soft); color:var(--terracotta-dark); }
+  .verdict-text{ font-size:.92rem; color:var(--cream-soft); line-height:1.5; }
+  .verdict-text b{ color:var(--peach-soft); }
+
+  .demo-nav{ display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:12px; }
+  .demo-dots{ display:flex; gap:8px; }
+  .demo-dots button{ width:8px; height:8px; border-radius:50%; background:rgba(246,238,224,0.3); transition:all .3s ease; }
+  .demo-dots button.on{ width:26px; border-radius:5px; background:var(--peach); }
+  .demo-nav-btns{ display:flex; gap:8px; }
+  .demo-nav-btn{ width:44px; height:44px; border-radius:50%; border:1.3px solid rgba(246,238,224,0.3); color:var(--cream); display:flex; align-items:center; justify-content:center; transition:all .3s ease; }
+  .demo-nav-btn:hover{ background:var(--peach); color:var(--brown); border-color:var(--peach); }
+  .demo-nav-btn[disabled]{ opacity:.25; pointer-events:none; }
+
+  /* ============ VOICE — DARK SECTION ============ */
+  .voice-section{ text-align:center; background:var(--brown); color:var(--cream); }
+  .voice-section .eyebrow{ background:rgba(232,168,124,0.14); color:var(--peach-soft); }
+  .voice-orb-wrap{ position:relative; width:220px; height:220px; margin:0 auto 40px; display:flex; align-items:center; justify-content:center; }
+  .voice-orb{ width:120px; height:120px; border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--peach), var(--terracotta) 70%); box-shadow:0 30px 70px -20px rgba(194,112,61,0.6); position:relative; z-index:2; }
+  .voice-ring{ position:absolute; border-radius:50%; border:1.4px solid var(--peach); opacity:.5; }
+  .voice-ring.r1{ width:160px; height:160px; }
+  .voice-ring.r2{ width:200px; height:200px; }
+  .voice-ring.r3{ width:220px; height:220px; }
+  .voice-tag{ font-family:var(--f-accent); font-style:italic; font-size:clamp(1.3rem,2.6vw,1.9rem); color:var(--cream-soft); max-width:560px; margin:0 auto; }
+
+  .progress-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:18px; }
+  .p-card{ background:var(--cream-soft); border:1.4px solid var(--line); border-radius:22px; padding:26px; transition:transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s ease; will-change:transform; }
+  .p-card:hover{ box-shadow:0 30px 60px -30px rgba(54,42,30,0.3); border-color:var(--brown-faint); }
+  .p-card-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; }
+  .p-badge{ font-family:var(--f-mono); font-size:.68rem; letter-spacing:.04em; padding:5px 12px; border-radius:100px; font-weight:700; }
+  .p-badge.mastered{ background:var(--olive-pale); color:var(--olive-dark); }
+  .p-badge.progress{ background:var(--peach-soft); color:var(--terracotta-dark); }
+  .p-card h3{ font-family:var(--f-display); font-weight:500; font-size:1.28rem; color:var(--brown); }
+  .p-card .sub{ font-size:.86rem; color:var(--brown-soft); margin-top:8px; }
+  .p-meter{ margin-top:18px; height:5px; border-radius:10px; background:var(--cream-deep); overflow:hidden; }
+  .p-meter span{ display:block; height:100%; background:var(--olive); border-radius:10px; }
+
+  .closing{ text-align:center; }
+  .closing-line{ font-family:var(--f-accent); font-style:italic; font-size:clamp(1.8rem,4.6vw,3.2rem); line-height:1.35; max-width:820px; margin:0 auto 44px; color:var(--brown); }
+  .closing-line .hl{ color:var(--terracotta); }
+
+  footer{ padding:56px 0 40px; background:var(--brown); color:var(--cream-soft); }
+  .foot-row{ display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:center; }
+  .foot-row .logo{ color:var(--cream-soft); }
+  .foot-note{ font-size:.86rem; color:rgba(246,238,224,0.55); }
+  .foot-links{ display:flex; gap:26px; font-size:.9rem; color:rgba(246,238,224,0.75); }
+
+  .reveal{ opacity:0; transform:translateY(36px); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  }
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--terracotta); outline-offset:3px; }
+</style>
+</head>
+<body>
+
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<nav>
+  <div class="container">
+    <a href="#top" class="logo">Samj<em>ho</em></a>
+    <ul class="nav-links">
+      <li><a href="#how" class="hoverable" data-i18n="nav.how">How it works</a></li>
+      <li><a href="#voice" class="hoverable" data-i18n="nav.voice">Voice</a></li>
+      <li><a href="#progress" class="hoverable" data-i18n="nav.progress">Progress</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-switch hoverable" id="langSwitch">
+        <button class="lang-current" id="langCurrent">EN <svg width="9" height="6" viewBox="0 0 9 6" style="margin-left:2px"><path d="M1 1L4.5 5L8 1" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></button>
+        <div class="lang-menu" id="langMenu">
+          <button data-lang="en" class="hoverable">English <span class="tag">EN</span></button>
+          <button data-lang="hi" class="hoverable">हिन्दी <span class="tag">HI</span></button>
+          <button data-lang="ta" class="hoverable">தமிழ் <span class="tag">TA</span></button>
+          <button data-lang="bn" class="hoverable">বাংলা <span class="tag">BN</span></button>
+          <button data-lang="mr" class="hoverable">मराठी <span class="tag">MR</span></button>
+        </div>
+      </div>
+      <a href="#how" class="btn btn-primary nav-cta hoverable" data-i18n="nav.cta">Try the loop</a>
+      <button class="menu-toggle hoverable" id="menuToggle" aria-label="menu">
+        <svg width="18" height="12" viewBox="0 0 18 12"><rect width="18" height="1.6" fill="#362A1E"/><rect y="10.4" width="18" height="1.6" fill="#362A1E"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="drawer" id="drawer">
+  <button class="drawer-close hoverable" id="drawerClose" aria-label="close menu">
+    <svg width="18" height="18" viewBox="0 0 18 18"><path d="M1 1L17 17M17 1L1 17" stroke="#F6EEE0" stroke-width="1.6"/></svg>
+  </button>
+  <ul>
+    <li><a href="#how" class="hoverable drawer-link" data-i18n="nav.how">How it works</a></li>
+    <li><a href="#voice" class="hoverable drawer-link" data-i18n="nav.voice">Voice</a></li>
+    <li><a href="#progress" class="hoverable drawer-link" data-i18n="nav.progress">Progress</a></li>
+  </ul>
+  <a href="#how" class="btn btn-primary drawer-cta hoverable drawer-link" data-i18n="nav.cta">Try the loop</a>
+</div>
+
+<section class="hero" id="top">
+  <canvas id="hero-canvas"></canvas>
+  <div class="orbit-wrap">
+    <svg viewBox="0 0 400 400">
+      <defs><path id="orbitPath" d="M200,40 a160,160 0 1,1 -0.1,0"/></defs>
+      <text font-family="Space Mono, monospace" font-size="11.5" letter-spacing="4" fill="#9C8A73">
+        <textPath href="#orbitPath">LISTENING &#8226; UNDERSTANDING &#8226; SPEAKING &#8226; MASTERING &#8226; </textPath>
+      </text>
+    </svg>
+  </div>
+  <div class="container">
+    <div class="hero-content">
+      <span class="eyebrow" data-i18n="hero.eyebrow">VOICE-FIRST AI TUTOR</span>
+      <h1 data-i18n="hero.h1">Until you truly <em>understand</em>,<br>Samjho won't stop.</h1>
+      <p data-i18n="hero.p">This isn't another chatbot that explains and walks away. Samjho listens, teaches through your own world, then asks you to prove it — understood, or just memorized?</p>
+      <div class="hero-cta">
+        <a href="#how" class="btn btn-primary hoverable" data-i18n="hero.cta1">See the loop</a>
+        <span class="play-hint"><span class="dot"></span> <span data-i18n="hero.hint">Learn by speaking, not just reading</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>scroll</span><span class="line"></span></div>
+</section>
+
+<section class="insight">
+  <div class="container">
+    <p class="insight-line" data-i18n="insight.line">Memorizing is one thing. <span class="hl">Understanding</span> is another. One forgets by next week. The other stays <span class="hl">for life</span>.</p>
+    <div class="stat-row">
+      <div class="stat reveal"><div class="num">4</div><div class="label" data-i18n="insight.stat1">STEP LOOP — EXPLAIN &#8594; TEACH-BACK &#8594; GAP &#8594; MASTERY</div></div>
+      <div class="stat reveal"><div class="num">5+</div><div class="label" data-i18n="insight.stat2">INTEREST-BASED ANALOGY WORLDS</div></div>
+      <div class="stat reveal"><div class="num">0</div><div class="label" data-i18n="insight.stat3">JARGON. JUST THE LANGUAGE YOU ACTUALLY SPEAK</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="how.eyebrow">THE LOOP</span>
+      <h2 data-i18n="how.h2">Four steps, one promise — <em>truly understand.</em></h2>
+      <p data-i18n="how.p">Click through each step to try it live. This loop is the entire product.</p>
+    </div>
+
+    <div class="loop-wrap">
+      <div class="step-list" id="stepList">
+        <div class="step-item active hoverable" data-step="0"><span class="step-num">01</span><div><div class="step-title" data-i18n="how.steps.0.title">Pick a topic + a world</div><div class="step-desc" data-i18n="how.steps.0.desc">Give a concept, choose which world to explain it through.</div></div></div>
+        <div class="step-item hoverable" data-step="1"><span class="step-num">02</span><div><div class="step-title" data-i18n="how.steps.1.title">Samjho explains</div><div class="step-desc" data-i18n="how.steps.1.desc">Breaks the concept into a vivid analogy from that world.</div></div></div>
+        <div class="step-item hoverable" data-step="2"><span class="step-num">03</span><div><div class="step-title" data-i18n="how.steps.2.title">You teach it back</div><div class="step-desc" data-i18n="how.steps.2.desc">Speak or type it back in your own words — the real test.</div></div></div>
+        <div class="step-item hoverable" data-step="3"><span class="step-num">04</span><div><div class="step-title" data-i18n="how.steps.3.title">Gaps get caught, mastery earned</div><div class="step-desc" data-i18n="how.steps.3.desc">Missed something? Fresh analogy. Nailed it? A harder question.</div></div></div>
+      </div>
+
+      <div class="demo-stage hoverable" id="demoStage">
+        <div class="demo-top">
+          <span class="demo-tag"><span class="rec"></span> <span id="liveTagText">LIVE LOOP DEMO</span></span>
+          <span class="demo-tag" id="demoStepLabel">STEP 01 / 04</span>
+        </div>
+        <div class="demo-body" id="demoBody"></div>
+        <div class="demo-nav">
+          <div class="demo-dots" id="demoDots"></div>
+          <div class="demo-nav-btns">
+            <button class="demo-nav-btn hoverable" id="demoPrev" aria-label="previous step"><svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M15 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.6"/></svg></button>
+            <button class="demo-nav-btn hoverable" id="demoNext" aria-label="next step"><svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M1 7H15M15 7L9 1M15 7L9 13" stroke="currentColor" stroke-width="1.6"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="voice" class="voice-section">
+  <div class="container">
+    <span class="eyebrow">VOICE-FIRST, FOR REAL</span>
+    <div class="voice-orb-wrap">
+      <div class="voice-ring r3"></div>
+      <div class="voice-ring r2"></div>
+      <div class="voice-ring r1"></div>
+      <div class="voice-orb hoverable" id="voiceOrb"></div>
+    </div>
+    <p class="voice-tag reveal" data-i18n="voice.tag">"Say it out loud" — because what reaches your tongue is what actually sits in your mind.</p>
+  </div>
+</section>
+
+<section id="progress">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="progress.eyebrow">EVERY CONCEPT, ACCOUNTED FOR</span>
+      <h2 data-i18n="progress.h2">See what's <em>locked in</em>, what's still on its way.</h2>
+      <p data-i18n="progress.p">Every topic's status is visible — built on proof, not guesswork.</p>
+    </div>
+    <div class="progress-grid" id="progressGrid"></div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="container">
+    <p class="closing-line reveal" data-i18n="closing.line">This isn't just a tool. It's a <span class="hl">promise</span> — that next time you understand something, you'll <span class="hl">truly</span> understand it.</p>
+    <a href="#how" class="btn btn-primary hoverable" data-i18n="closing.cta">Try the loop</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container foot-row">
+    <a href="#top" class="logo hoverable">Samj<em>ho</em></a>
+    <div class="foot-links">
+      <a href="#how" class="hoverable" data-i18n="nav.how">How it works</a>
+      <a href="#voice" class="hoverable" data-i18n="nav.voice">Voice</a>
+      <a href="#progress" class="hoverable" data-i18n="nav.progress">Progress</a>
+    </div>
+    <span class="foot-note" data-i18n="footer.note">Built with care, one concept at a time.</span>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   TRANSLATIONS
+============================================================ */
+const translations = {
+en:{
+  nav:{how:`How it works`, voice:`Voice`, progress:`Progress`, cta:`Try the loop`},
+  hero:{eyebrow:`VOICE-FIRST AI TUTOR`, h1:`Until you truly <em>understand</em>,<br>Samjho won't stop.`, p:`This isn't another chatbot that explains and walks away. Samjho listens, teaches through your own world, then asks you to prove it — understood, or just memorized?`, cta1:`See the loop`, hint:`Learn by speaking, not just reading`},
+  insight:{line:`Memorizing is one thing. <span class="hl">Understanding</span> is another. One forgets by next week. The other stays <span class="hl">for life</span>.`, stat1:`STEP LOOP — EXPLAIN &#8594; TEACH-BACK &#8594; GAP &#8594; MASTERY`, stat2:`INTEREST-BASED ANALOGY WORLDS`, stat3:`JARGON. JUST THE LANGUAGE YOU ACTUALLY SPEAK`},
+  how:{eyebrow:`THE LOOP`, h2:`Four steps, one promise — <em>truly understand.</em>`, p:`Click through each step to try it live. This loop is the entire product.`,
+    steps:[
+      {title:`Pick a topic + a world`, desc:`Give a concept, choose which world to explain it through — cricket, farming, gaming, movies, or everyday life.`},
+      {title:`Samjho explains`, desc:`Breaks the concept into a vivid analogy from that world — a story, not a textbook page.`},
+      {title:`You teach it back`, desc:`Speak or type it back in your own words. This is the real test.`},
+      {title:`Gaps get caught, mastery earned`, desc:`Missed something? A fresh analogy, instantly. Nailed it? A harder question, and a mastery badge.`}
+    ]},
+  voice:{tag:`"Say it out loud" — because what reaches your tongue is what actually sits in your mind.`},
+  progress:{eyebrow:`EVERY CONCEPT, ACCOUNTED FOR`, h2:`See what's <em>locked in</em>, what's still on its way.`, p:`Every topic's status is visible — built on proof, not guesswork.`,
+    cards:[
+      {badge:`Mastered`, title:`Newton's Third Law`, sub:`Understood through a cricket analogy — force between bat and ball`, pct:100},
+      {badge:`In Progress`, title:`Supply &amp; Demand`, sub:`A gap was caught — re-teaching through a farming analogy`, pct:55},
+      {badge:`Mastered`, title:`Photosynthesis`, sub:`Understood through an everyday analogy — like cooking in a kitchen`, pct:100},
+      {badge:`In Progress`, title:`Compound Interest`, sub:`Trying a gaming analogy — like XP stacking up`, pct:30}
+    ]},
+  closing:{line:`This isn't just a tool. It's a <span class="hl">promise</span> — that next time you understand something, you'll <span class="hl">truly</span> understand it.`, cta:`Try the loop`},
+  footer:{note:`Built with care, one concept at a time.`},
+  demo:{
+    liveTag:`LIVE LOOP DEMO`, stepLabels:[`STEP 01 / 04`,`STEP 02 / 04`,`STEP 03 / 04`,`STEP 04 / 04`],
+    topicLabel:`Topic:`, topicName:`Newton's Third Law`, chooseWorld:`Choose a world:`,
+    interestLabels:{cricket:`Cricket`, farming:`Farming`, gaming:`Gaming`, bollywood:`Movies`},
+    listenLabel:`Listen`, speakPrompt:`Tap the mic and explain it back in your own words`, micUnsupported:`Voice input isn't available here — type it instead`,
+    typeFallbackPlaceholder:`Type your explanation here...`, submitLabel:`Check my understanding`,
+    teachbackHeard:`I heard you say:`,
+    masteryText:`Now you've truly got it — Mastery unlocked`,
+    tryAgain:`Try again`, newInterest:`Try another world`, goSpeak:`Go to step 3 first`,
+    waitingForAnswer:`Record your explanation in step 3, then come back here to see your result.`,
+    loadingExplain:`Samjho is crafting your analogy...`,
+    loadingEval:`Samjho is thinking...`,
+    loadingReteach:`Finding a fresh angle for you...`,
+    errorExplain:`Couldn't reach Samjho — please try again.`,
+    errorEval:`Couldn't evaluate right now — please try again.`
+  }
+},
+hi:{
+  nav:{how:`कैसे काम करता है`, voice:`आवाज़`, progress:`प्रगति`, cta:`लूप आज़माएं`},
+  hero:{eyebrow:`आवाज़-आधारित AI ट्यूटर`, h1:`जब तक सच में <em>समझो</em> न,<br>तब तक Samjho नहीं रुकता।`, p:`ये कोई और चैटबॉट नहीं जो समझाकर चला जाए। Samjho सुनता है, तुम्हारी अपनी दुनिया की मिसाल से समझाता है, फिर पूछता है — सच में समझा, या बस याद किया?`, cta1:`लूप देखें`, hint:`बोलकर सीखो, सिर्फ पढ़कर नहीं`},
+  insight:{line:`याद करना अलग है, <span class="hl">समझना</span> अलग। एक अगले हफ्ते भूल जाता है, दूसरा <span class="hl">ज़िंदगी भर</span> साथ रहता है।`, stat1:`स्टेप लूप — समझाओ &#8594; वापस समझाओ &#8594; कमी &#8594; महारत`, stat2:`रुचि-आधारित मिसाल वाली दुनियाएं`, stat3:`शब्दजाल नहीं। सिर्फ वो भाषा जो तुम बोलते हो`},
+  how:{eyebrow:`यह लूप`, h2:`चार कदम, एक ही वादा — <em>सच में समझो।</em>`, p:`हर कदम पर क्लिक करके लाइव आज़माएं। यही लूप पूरा प्रोडक्ट है।`,
+    steps:[
+      {title:`विषय + दुनिया चुनो`, desc:`कोई कॉन्सेप्ट बताओ, फिर चुनो किस दुनिया से मिसाल चाहिए — क्रिकेट, खेती, गेमिंग, फिल्में या रोज़मर्रा ज़िंदगी।`},
+      {title:`Samjho समझाता है`, desc:`कॉन्सेप्ट को उस दुनिया की जीवंत मिसाल में तोड़ता है — किताब जैसा नहीं, कहानी जैसा।`},
+      {title:`तुम वापस समझाओ`, desc:`बोलकर या लिखकर, अपने शब्दों में वापस समझाओ। यही असली परीक्षा है।`},
+      {title:`कमी पकड़ी जाती है, महारत मिलती है`, desc:`कुछ छूट गया? नई मिसाल, तुरंत। पूरा समझ गए? अगला मुश्किल सवाल, और एक महारत बैज।`}
+    ]},
+  voice:{tag:`"बोलकर दिखाओ" — क्योंकि जो ज़ुबान पर आता है, वही असल में दिमाग़ में बैठता है।`},
+  progress:{eyebrow:`हर कॉन्सेप्ट का हिसाब`, h2:`देखो क्या <em>पक्का</em> है, क्या अभी सफ़र में है।`, p:`हर विषय की स्थिति साफ़ दिखती है — भरोसे पर बनी, अंदाज़े पर नहीं।`,
+    cards:[
+      {badge:`महारत हासिल`, title:`न्यूटन का तीसरा नियम`, sub:`क्रिकेट की मिसाल से समझा — बल्ले और गेंद के बीच का बल`, pct:100},
+      {badge:`जारी है`, title:`मांग और आपूर्ति`, sub:`एक कमी पकड़ी गई — खेती की मिसाल से दोबारा समझाया जा रहा`, pct:55},
+      {badge:`महारत हासिल`, title:`प्रकाश संश्लेषण`, sub:`रोज़मर्रा की मिसाल से समझा — रसोई में खाना बनाने जैसा`, pct:100},
+      {badge:`जारी है`, title:`चक्रवृद्धि ब्याज`, sub:`गेमिंग की मिसाल आज़माई जा रही — XP जमा होने जैसा`, pct:30}
+    ]},
+  closing:{line:`यह सिर्फ एक टूल नहीं है। यह एक <span class="hl">वादा</span> है — कि अगली बार जब कुछ समझोगे, तो <span class="hl">सच में</span> समझोगे।`, cta:`लूप आज़माएं`},
+  footer:{note:`प्यार से बनाया गया, एक कॉन्सेप्ट एक वक़्त में।`},
+  demo:{
+    liveTag:`लाइव लूप डेमो`, stepLabels:[`कदम 01 / 04`,`कदम 02 / 04`,`कदम 03 / 04`,`कदम 04 / 04`],
+    topicLabel:`विषय:`, topicName:`न्यूटन का तीसरा नियम`, chooseWorld:`दुनिया चुनो:`,
+    interestLabels:{cricket:`क्रिकेट`, farming:`खेती`, gaming:`गेमिंग`, bollywood:`फिल्में`},
+    listenLabel:`सुनो`, speakPrompt:`माइक दबाओ और अपने शब्दों में वापस समझाओ`, micUnsupported:`यहाँ आवाज़ इनपुट उपलब्ध नहीं है — इसकी बजाय टाइप करो`,
+    typeFallbackPlaceholder:`यहाँ अपनी बात लिखो...`, submitLabel:`समझ जांचो`,
+    teachbackHeard:`तुमने कहा:`,
+    masteryText:`अब पूरा समझ गए — महारत हासिल`,
+    tryAgain:`दोबारा कोशिश करो`, newInterest:`दूसरी दुनिया आज़माओ`, goSpeak:`पहले कदम 03 पर जाओ`,
+    waitingForAnswer:`कदम 03 में अपनी बात रिकॉर्ड करो, फिर यहाँ वापस आकर नतीजा देखो।`,
+    loadingExplain:`Samjho तुम्हारी मिसाल बना रहा है...`,
+    loadingEval:`Samjho सोच रहा है...`,
+    loadingReteach:`एक नई मिसाल ढूंढ रहा हूँ...`,
+    errorExplain:`Samjho तक नहीं पहुंच पाया — दोबारा कोशिश करो।`,
+    errorEval:`अभी जांच नहीं हो पाई — दोबारा कोशिश करो।`
+  }
+},
+ta:{
+  nav:{how:`இது எப்படி வேலை செய்கிறது`, voice:`குரல்`, progress:`முன்னேற்றம்`, cta:`லூப்பை முயற்சிக்கவும்`},
+  hero:{eyebrow:`குரல்-முதன்மை AI ஆசிரியர்`, h1:`நீங்கள் உண்மையில் <em>புரிந்துகொள்ளும்</em> வரை,<br>Samjho நிற்காது.`, p:`இது விளக்கிவிட்டு போகும் இன்னொரு chatbot அல்ல. Samjho கேட்கிறது, உங்கள் சொந்த உலகத்தின் வழியே கற்பிக்கிறது, பின் நிரூபிக்கச் சொல்கிறது — புரிந்ததா, அல்லது மனப்பாடம் செய்ததா?`, cta1:`லூப்பைப் பார்க்கவும்`, hint:`பேசி கற்றுக்கொள்ளுங்கள், படித்து மட்டும் இல்லை`},
+  insight:{line:`மனப்பாடம் செய்வது வேறு, <span class="hl">புரிந்துகொள்வது</span> வேறு. ஒன்று அடுத்த வாரம் மறந்துவிடும், மற்றொன்று <span class="hl">வாழ்நாள் முழுவதும்</span> நிலைக்கும்.`, stat1:`படி லூப் — விளக்கு &#8594; திரும்பச் சொல் &#8594; இடைவெளி &#8594; தேர்ச்சி`, stat2:`ஆர்வ அடிப்படையிலான ஒப்பீட்டு உலகங்கள்`, stat3:`வார்த்தை ஜாலம் இல்லை. நீங்கள் பேசும் மொழி மட்டுமே`},
+  how:{eyebrow:`லூப்`, h2:`நான்கு படிகள், ஒரே வாக்குறுதி — <em>உண்மையில் புரிந்துகொள்.</em>`, p:`ஒவ்வொரு படியையும் கிளிக் செய்து நேரலையில் முயற்சிக்கவும். இந்த லூப்தான் முழு தயாரிப்பும்.`,
+    steps:[
+      {title:`தலைப்பு + உலகைத் தேர்ந்தெடு`, desc:`ஒரு கருத்தைக் கொடு, எந்த உலகத்தின் வழியே விளக்க வேண்டும் எனத் தேர்ந்தெடு — கிரிக்கெட், விவசாயம், கேமிங், சினிமா அல்லது அன்றாட வாழ்க்கை.`},
+      {title:`Samjho விளக்குகிறது`, desc:`கருத்தை அந்த உலகத்தின் உயிரோட்டமான உவமையாக உடைக்கிறது — பாடப்புத்தகம் அல்ல, ஒரு கதை.`},
+      {title:`நீங்கள் திரும்பக் கற்பிக்கிறீர்கள்`, desc:`பேசி அல்லது தட்டச்சு செய்து, உங்கள் சொந்த வார்த்தைகளில் திரும்பச் சொல்லுங்கள்.`},
+      {title:`இடைவெளிகள் கண்டறியப்படும், தேர்ச்சி கிடைக்கும்`, desc:`ஏதாவது தவறவிட்டீர்களா? புதிய உவமை, உடனடியாக. முழுமையாக புரிந்ததா? கடினமான கேள்வி.`}
+    ]},
+  voice:{tag:`"சத்தமாகச் சொல்லுங்கள்" — ஏனெனில் நாக்கை எட்டுவதுதான் மனதில் உண்மையில் நிலைக்கும்.`},
+  progress:{eyebrow:`ஒவ்வொரு கருத்தும் கணக்கில்`, h2:`எது <em>உறுதியாகியது</em>, எது இன்னும் பயணத்தில் என்று பாருங்கள்.`, p:`ஒவ்வொரு தலைப்பின் நிலையும் தெளிவாகத் தெரியும் — நிரூபணத்தின் மேல் கட்டப்பட்டது.`,
+    cards:[
+      {badge:`தேர்ச்சி பெற்றது`, title:`நியூட்டனின் மூன்றாம் விதி`, sub:`கிரிக்கெட் உவமை மூலம் புரிந்தது — மட்டைக்கும் பந்துக்கும் இடையேயான விசை`, pct:100},
+      {badge:`நடைபெறுகிறது`, title:`தேவையும் அளிப்பும்`, sub:`ஒரு இடைவெளி கண்டறியப்பட்டது — விவசாய உவமை மூலம் மீண்டும் கற்பிக்கப்படுகிறது`, pct:55},
+      {badge:`தேர்ச்சி பெற்றது`, title:`ஒளிச்சேர்க்கை`, sub:`அன்றாட உவமை மூலம் புரிந்தது — சமையலறையில் சமைப்பது போல`, pct:100},
+      {badge:`நடைபெறுகிறது`, title:`கூட்டு வட்டி`, sub:`கேமிங் உவமை முயற்சிக்கப்படுகிறது — XP குவிவது போல`, pct:30}
+    ]},
+  closing:{line:`இது வெறும் ஒரு கருவி இல்லை. இது ஒரு <span class="hl">வாக்குறுதி</span> — அடுத்த முறை நீங்கள் ஏதாவது புரிந்துகொள்ளும்போது, அதை <span class="hl">உண்மையிலேயே</span> புரிந்துகொள்வீர்கள்.`, cta:`லூப்பை முயற்சிக்கவும்`},
+  footer:{note:`அக்கறையுடன் உருவாக்கப்பட்டது, ஒரு நேரத்தில் ஒரு கருத்து.`},
+  demo:{
+    liveTag:`நேரடி லூப் டெமோ`, stepLabels:[`படி 01 / 04`,`படி 02 / 04`,`படி 03 / 04`,`படி 04 / 04`],
+    topicLabel:`தலைப்பு:`, topicName:`நியூட்டனின் மூன்றாம் விதி`, chooseWorld:`உலகைத் தேர்ந்தெடு:`,
+    interestLabels:{cricket:`கிரிக்கெட்`, farming:`விவசாயம்`, gaming:`கேமிங்`, bollywood:`சினிமா`},
+    listenLabel:`கேளுங்கள்`, speakPrompt:`மைக்கை அழுத்தி உங்கள் சொந்த வார்த்தைகளில் திரும்பச் சொல்லுங்கள்`, micUnsupported:`இங்கே குரல் உள்ளீடு இல்லை — அதற்கு பதிலாக தட்டச்சு செய்யவும்`,
+    typeFallbackPlaceholder:`இங்கே உங்கள் விளக்கத்தை எழுதுங்கள்...`, submitLabel:`புரிதலை சரிபார்க்கவும்`,
+    teachbackHeard:`நீங்கள் சொன்னது:`,
+    masteryText:`இப்போது முழுமையாக புரிந்துவிட்டது — தேர்ச்சி திறக்கப்பட்டது`,
+    tryAgain:`மீண்டும் முயற்சிக்கவும்`, newInterest:`வேறு உலகை முயற்சிக்கவும்`, goSpeak:`முதலில் படி 03க்குச் செல்லவும்`,
+    waitingForAnswer:`படி 03 இல் உங்கள் விளக்கத்தை பதிவு செய்யவும், பின் இங்கு வந்து முடிவைப் பாருங்கள்.`,
+    loadingExplain:`Samjho உங்கள் உவமையை உருவாக்குகிறது...`,
+    loadingEval:`Samjho யோசிக்கிறது...`,
+    loadingReteach:`புதிய கோணம் தேடுகிறேன்...`,
+    errorExplain:`Samjho அடையவில்லை — மீண்டும் முயற்சிக்கவும்.`,
+    errorEval:`இப்போது மதிப்பிட முடியவில்லை — மீண்டும் முயற்சிக்கவும்.`
+  }
+},
+bn:{
+  nav:{how:`এটি কীভাবে কাজ করে`, voice:`কণ্ঠস্বর`, progress:`অগ্রগতি`, cta:`লুপটি চেষ্টা করুন`},
+  hero:{eyebrow:`ভয়েস-ফার্স্ট AI টিউটর`, h1:`যতক্ষণ না তুমি সত্যিই <em>বুঝবে</em>,<br>Samjho থামবে না।`, p:`এটা এমন কোনো chatbot নয় যা বুঝিয়ে চলে যায়। Samjho শোনে, তোমার নিজের জগতের মাধ্যমে শেখায়, তারপর প্রমাণ চায় — সত্যিই বুঝেছো, নাকি শুধু মুখস্থ করেছো?`, cta1:`লুপটি দেখো`, hint:`বলে শেখো, শুধু পড়ে নয়`},
+  insight:{line:`মুখস্থ করা আলাদা, <span class="hl">বোঝা</span> আলাদা। একটা পরের সপ্তাহে ভুলে যায়, অন্যটা <span class="hl">সারাজীবন</span> থেকে যায়।`, stat1:`স্টেপ লুপ — বোঝাও &#8594; ফিরিয়ে বলো &#8594; ফাঁক &#8594; দক্ষতা`, stat2:`আগ্রহ-ভিত্তিক উপমার জগৎ`, stat3:`জার্গন নয়। শুধু সেই ভাষা যা তুমি আসলে বলো`},
+  how:{eyebrow:`লুপ`, h2:`চারটি ধাপ, একটাই প্রতিশ্রুতি — <em>সত্যিই বোঝো।</em>`, p:`প্রতিটি ধাপে ক্লিক করে লাইভ চেষ্টা করো। এই লুপটাই পুরো প্রোডাক্ট।`,
+    steps:[
+      {title:`বিষয় + জগৎ বেছে নাও`, desc:`একটা কনসেপ্ট দাও, কোন জগতের মাধ্যমে বোঝাতে হবে বেছে নাও — ক্রিকেট, চাষ, গেমিং, সিনেমা বা রোজকার জীবন।`},
+      {title:`Samjho বোঝায়`, desc:`কনসেপ্টটাকে সেই জগতের জীবন্ত উপমায় ভেঙে দেয় — পাঠ্যবই নয়, একটা গল্পের মতো।`},
+      {title:`তুমি ফিরিয়ে বোঝাও`, desc:`বলে বা লিখে, নিজের ভাষায় ফিরিয়ে বলো। এটাই আসল পরীক্ষা।`},
+      {title:`ফাঁক ধরা পড়ে, দক্ষতা অর্জিত হয়`, desc:`কিছু বাদ পড়েছে? নতুন উপমা, সাথে সাথে। পুরোপুরি বুঝেছো? কঠিন প্রশ্ন।`}
+    ]},
+  voice:{tag:`"বলে দেখাও" — কারণ যা জিভে আসে, তাই আসলে মনে গেঁথে যায়।`},
+  progress:{eyebrow:`প্রতিটি কনসেপ্টের হিসাব`, h2:`দেখো কী <em>পাকা</em> হয়ে গেছে, কী এখনো পথে আছে।`, p:`প্রতিটি বিষয়ের অবস্থা স্পষ্ট দেখা যায় — প্রমাণের উপর তৈরি।`,
+    cards:[
+      {badge:`দক্ষতা অর্জিত`, title:`নিউটনের তৃতীয় সূত্র`, sub:`ক্রিকেট উপমা দিয়ে বোঝা — ব্যাট আর বলের মধ্যে বল`, pct:100},
+      {badge:`চলছে`, title:`চাহিদা ও যোগান`, sub:`একটা ফাঁক ধরা পড়েছে — চাষের উপমা দিয়ে আবার শেখানো হচ্ছে`, pct:55},
+      {badge:`দক্ষতা অর্জিত`, title:`সালোকসংশ্লেষণ`, sub:`রোজকার উপমা দিয়ে বোঝা — রান্নাঘরে রান্নার মতো`, pct:100},
+      {badge:`চলছে`, title:`চক্রবৃদ্ধি সুদ`, sub:`গেমিং উপমা চেষ্টা করা হচ্ছে — XP জমা হওয়ার মতো`, pct:30}
+    ]},
+  closing:{line:`এটা শুধু একটা টুল নয়। এটা একটা <span class="hl">প্রতিশ্রুতি</span> — পরের বার যখন তুমি কিছু বুঝবে, তখন <span class="hl">সত্যিই</span> বুঝবে।`, cta:`লুপটি চেষ্টা করুন`},
+  footer:{note:`যত্ন নিয়ে তৈরি, একবারে একটা কনসেপ্ট।`},
+  demo:{
+    liveTag:`লাইভ লুপ ডেমো`, stepLabels:[`ধাপ ০১ / ০৪`,`ধাপ ০২ / ০৪`,`ধাপ ০৩ / ০৪`,`ধাপ ০৪ / ০৪`],
+    topicLabel:`বিষয়:`, topicName:`নিউটনের তৃতীয় সূত্র`, chooseWorld:`জগৎ বেছে নাও:`,
+    interestLabels:{cricket:`ক্রিকেট`, farming:`চাষ`, gaming:`গেমিং`, bollywood:`সিনেমা`},
+    listenLabel:`শোনো`, speakPrompt:`মাইক চাপো এবং নিজের ভাষায় ফিরিয়ে বোঝাও`, micUnsupported:`এখানে ভয়েস ইনপুট নেই — এর বদলে টাইপ করো`,
+    typeFallbackPlaceholder:`এখানে তোমার ব্যাখ্যা লেখো...`, submitLabel:`বোঝাপড়া যাচাই করো`,
+    teachbackHeard:`তুমি বলেছো:`,
+    masteryText:`এখন পুরোপুরি বুঝে গেছো — দক্ষতা অর্জিত`,
+    tryAgain:`আবার চেষ্টা করো`, newInterest:`অন্য জগৎ চেষ্টা করো`, goSpeak:`আগে ধাপ ০৩ এ যাও`,
+    waitingForAnswer:`ধাপ ০৩ এ তোমার ব্যাখ্যা রেকর্ড করো, তারপর এখানে ফিরে এসে ফলাফল দেখো।`,
+    loadingExplain:`Samjho তোমার উপমা তৈরি করছে...`,
+    loadingEval:`Samjho ভাবছে...`,
+    loadingReteach:`নতুন কোণ খুঁজছি...`,
+    errorExplain:`Samjho-র সাথে যোগাযোগ হয়নি — আবার চেষ্টা করো।`,
+    errorEval:`এখন মূল্যায়ন করা গেল না — আবার চেষ্টা করো।`
+  }
+},
+mr:{
+  nav:{how:`हे कसे काम करते`, voice:`आवाज`, progress:`प्रगती`, cta:`लूप वापरून पहा`},
+  hero:{eyebrow:`आवाज-प्रथम AI शिक्षक`, h1:`जोपर्यंत तुम्ही खरंच <em>समजत</em> नाही,<br>तोपर्यंत Samjho थांबणार नाही.`, p:`हा आणखी एक chatbot नाही जो समजावून निघून जातो. Samjho ऐकतो, तुमच्याच जगातून शिकवतो, आणि मग सिद्ध करायला सांगतो — खरंच समजलं, की फक्त पाठ केलं?`, cta1:`लूप बघा`, hint:`बोलून शिका, फक्त वाचून नाही`},
+  insight:{line:`पाठ करणं वेगळं, <span class="hl">समजणं</span> वेगळं. एक पुढच्या आठवड्यात विसरतो, दुसरं <span class="hl">आयुष्यभर</span> टिकतं.`, stat1:`स्टेप लूप — समजावा &#8594; परत सांगा &#8594; त्रुटी &#8594; प्रावीण्य`, stat2:`आवडीवर आधारित उदाहरणांची जगं`, stat3:`शब्दजाल नाही. फक्त ती भाषा जी तुम्ही खरंच बोलता`},
+  how:{eyebrow:`हा लूप`, h2:`चार पायऱ्या, एकच वचन — <em>खरंच समजा.</em>`, p:`प्रत्येक पायरीवर क्लिक करून लाइव्ह वापरून पहा. हाच लूप संपूर्ण प्रॉडक्ट आहे.`,
+    steps:[
+      {title:`विषय + जग निवडा`, desc:`एखादी संकल्पना सांगा, कोणत्या जगातून समजावून हवं ते निवडा — क्रिकेट, शेती, गेमिंग, सिनेमा किंवा रोजचं आयुष्य.`},
+      {title:`Samjho समजावतो`, desc:`संकल्पना त्या जगातील जिवंत उदाहरणात मोडतो — पाठ्यपुस्तक नाही, गोष्टीसारखं.`},
+      {title:`तुम्ही परत समजावता`, desc:`बोलून किंवा लिहून, स्वतःच्या शब्दांत परत सांगा. हीच खरी परीक्षा आहे.`},
+      {title:`त्रुटी पकडली जाते, प्रावीण्य मिळतं`, desc:`काही सुटलं? नवीन उदाहरण, लगेच. पूर्ण समजलं? अजून अवघड प्रश्न.`}
+    ]},
+  voice:{tag:`"बोलून दाखवा" — कारण जे जिभेवर येतं, तेच खऱ्या अर्थाने मनात बसतं.`},
+  progress:{eyebrow:`प्रत्येक संकल्पनेचा हिशोब`, h2:`बघा काय <em>पक्कं</em> झालंय, काय अजून प्रवासात आहे.`, p:`प्रत्येक विषयाची स्थिती स्पष्ट दिसते — पुराव्यावर आधारित.`,
+    cards:[
+      {badge:`प्रावीण्य मिळालं`, title:`न्यूटनचा तिसरा नियम`, sub:`क्रिकेट उदाहरणातून समजलं — बॅट आणि चेंडूमधील बळ`, pct:100},
+      {badge:`सुरू आहे`, title:`मागणी आणि पुरवठा`, sub:`एक त्रुटी सापडली — शेतीच्या उदाहरणातून पुन्हा शिकवत आहे`, pct:55},
+      {badge:`प्रावीण्य मिळालं`, title:`प्रकाशसंश्लेषण`, sub:`रोजच्या उदाहरणातून समजलं — स्वयंपाकघरात जेवण बनवण्यासारखं`, pct:100},
+      {badge:`सुरू आहे`, title:`चक्रवाढ व्याज`, sub:`गेमिंग उदाहरण वापरून पाहत आहे — XP साठत जाण्यासारखं`, pct:30}
+    ]},
+  closing:{line:`हे फक्त एक साधन नाही. हे एक <span class="hl">वचन</span> आहे — पुढच्या वेळी तुम्ही काही समजाल, तेव्हा <span class="hl">खरंच</span> समजाल.`, cta:`लूप वापरून पहा`},
+  footer:{note:`काळजीपूर्वक बनवलं, एका वेळी एक संकल्पना.`},
+  demo:{
+    liveTag:`लाइव्ह लूप डेमो`, stepLabels:[`पायरी ०१ / ०४`,`पायरी ०२ / ०४`,`पायरी ०३ / ०४`,`पायरी ०४ / ०४`],
+    topicLabel:`विषय:`, topicName:`न्यूटनचा तिसरा नियम`, chooseWorld:`जग निवडा:`,
+    interestLabels:{cricket:`क्रिकेट`, farming:`शेती`, gaming:`गेमिंग`, bollywood:`सिनेमा`},
+    listenLabel:`ऐका`, speakPrompt:`माईक दाबा आणि स्वतःच्या शब्दांत परत समजावा`, micUnsupported:`इथे आवाज इनपुट उपलब्ध नाही — त्याऐवजी टाइप करा`,
+    typeFallbackPlaceholder:`इथे तुमचं स्पष्टीकरण लिहा...`, submitLabel:`समज तपासा`,
+    teachbackHeard:`तुम्ही म्हणालात:`,
+    masteryText:`आता पूर्ण समजलं — प्रावीण्य मिळालं`,
+    tryAgain:`पुन्हा प्रयत्न करा`, newInterest:`दुसरं जग वापरून पहा`, goSpeak:`आधी पायरी ०३ वर जा`,
+    waitingForAnswer:`पायरी ०३ मध्ये तुमचं स्पष्टीकरण रेकॉर्ड करा, मग इथे परत येऊन निकाल बघा.`,
+    loadingExplain:`Samjho तुमचं उदाहरण तयार करत आहे...`,
+    loadingEval:`Samjho विचार करत आहे...`,
+    loadingReteach:`नवीन कोन शोधत आहे...`,
+    errorExplain:`Samjho पर्यंत पोहोचता आलं नाही — पुन्हा प्रयत्न करा.`,
+    errorEval:`आत्ता मूल्यांकन करता आलं नाही — पुन्हा प्रयत्न करा.`
+  }
+}
+};
+
+const langLocale = { en:'en-IN', hi:'hi-IN', ta:'ta-IN', bn:'bn-IN', mr:'mr-IN' };
+let currentLang = localStorage.getItem('samjho-lang') || 'en';
+
+function tGet(obj, path){ return path.split('.').reduce((o,k)=> (o && o[k]!==undefined) ? o[k] : null, obj); }
+
+function applyStaticTranslations(lang){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const val = tGet(translations[lang], el.dataset.i18n);
+    if(val!=null) el.innerHTML = val;
+  });
+  document.documentElement.lang = lang;
+  document.documentElement.setAttribute('data-lang', lang);
+  document.getElementById('langCurrent').firstChild.textContent = lang.toUpperCase() + ' ';
+  document.querySelectorAll('.lang-menu button').forEach(b=> b.classList.toggle('active', b.dataset.lang===lang));
+  document.getElementById('liveTagText').textContent = translations[lang].demo.liveTag;
+  renderProgressGrid(lang);
+}
+
+function renderProgressGrid(lang){
+  const grid = document.getElementById('progressGrid');
+  const cards = translations[lang].progress.cards;
+  grid.innerHTML = cards.map((c,i)=>`
+    <div class="p-card reveal hoverable" style="opacity:1;transform:none;">
+      <div class="p-card-top"><span class="p-badge ${c.pct===100?'mastered':'progress'}">${c.badge}</span></div>
+      <h3>${c.title}</h3><div class="sub">${c.sub}</div>
+      <div class="p-meter"><span style="width:${c.pct}%"></span></div>
+    </div>`).join('');
+  attachTilt(grid.querySelectorAll('.p-card'));
+}
+
+/* ================= LANGUAGE SWITCHER UI ================= */
+const langSwitch = document.getElementById('langSwitch');
+const langMenu = document.getElementById('langMenu');
+document.getElementById('langCurrent').addEventListener('click', (e)=>{ e.stopPropagation(); langMenu.classList.toggle('open'); });
+document.addEventListener('click', ()=> langMenu.classList.remove('open'));
+langMenu.querySelectorAll('button').forEach(b=>{
+  b.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const lang = b.dataset.lang;
+    localStorage.setItem('samjho-lang', lang);
+    currentLang = lang;
+    applyStaticTranslations(lang);
+    // Full reset including explanation cache — new lang = new Groq call
+    demoState = {
+      interest:'cricket', stepIndex:0, transcript:'', verdict:null, verdictData:null,
+      listening:false, currentExplanation:'', missingPart:'',
+      reteachCount:0, reteachExplanation:'', loading:false
+    };
+    renderDemo();
+    langMenu.classList.remove('open');
+  });
+})
+
+/* ================= MOBILE DRAWER ================= */
+const drawer = document.getElementById('drawer');
+document.getElementById('menuToggle').addEventListener('click', ()=> drawer.classList.add('open'));
+document.getElementById('drawerClose').addEventListener('click', ()=> drawer.classList.remove('open'));
+document.querySelectorAll('.drawer-link').forEach(a=> a.addEventListener('click', ()=> drawer.classList.remove('open')));
+
+/* ================= CUSTOM CURSOR ================= */
+const dot = document.querySelector('.cursor-dot');
+const ring = document.querySelector('.cursor-ring');
+let mx=innerWidth/2,my=innerHeight/2, rx=mx, ry=my;
+window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; dot.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`; });
+function loopCursor(){ rx += (mx-rx)*0.16; ry += (my-ry)*0.16; ring.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`; requestAnimationFrame(loopCursor); }
+loopCursor();
+function bindHoverables(){
+  document.querySelectorAll('.hoverable').forEach(el=>{
+    el.removeEventListener('mouseenter', el._hEnter||(()=>{}));
+    el._hEnter = ()=> ring.classList.add('hovering');
+    el._hLeave = ()=> ring.classList.remove('hovering');
+    el.addEventListener('mouseenter', el._hEnter);
+    el.addEventListener('mouseleave', el._hLeave);
+  });
+}
+bindHoverables();
+
+/* click ripple */
+document.addEventListener('click', e=>{
+  const r = document.createElement('div');
+  r.className='ripple';
+  r.style.left = e.clientX+'px'; r.style.top = e.clientY+'px';
+  document.body.appendChild(r);
+  gsap.fromTo(r, {scale:0.3, opacity:.9}, {scale:3.2, opacity:0, duration:.6, ease:'power2.out', onComplete:()=> r.remove()});
+});
+
+/* ================= MAGNETIC BUTTONS ================= */
+function attachMagnetic(el){
+  el.addEventListener('mousemove', e=>{
+    const r = el.getBoundingClientRect();
+    gsap.to(el, { x:(e.clientX-r.left-r.width/2)*0.18, y:(e.clientY-r.top-r.height/2)*0.18, duration:0.5, ease:'power3.out' });
+  });
+  el.addEventListener('mouseleave', ()=> gsap.to(el,{x:0,y:0,duration:0.6,ease:'elastic.out(1,0.4)'}));
+}
+document.querySelectorAll('.btn, .mic-btn').forEach(attachMagnetic);
+
+function attachTilt(nodeList){
+  nodeList.forEach(card=>{
+    card.addEventListener('mousemove', e=>{
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - 0.5;
+      const py = (e.clientY - r.top)/r.height - 0.5;
+      gsap.to(card,{ rotateY: px*6, rotateX: -py*6, duration:0.6, ease:'power2.out', transformPerspective:800 });
+    });
+    card.addEventListener('mouseleave', ()=> gsap.to(card,{ rotateY:0, rotateX:0, duration:0.8, ease:'power3.out' }));
+  });
+}
+attachTilt(document.querySelectorAll('.demo-stage'));
+
+/* ================= SCROLL REVEALS ================= */
+gsap.registerPlugin(ScrollTrigger);
+function refreshReveals(){
+  gsap.utils.toArray('.reveal').forEach((el,i)=>{
+    if(el._revealed) return;
+    gsap.to(el, { opacity:1, y:0, duration:1, ease:'power3.out', scrollTrigger:{ trigger:el, start:'top 88%' }, delay:(i%3)*0.08 });
+  });
+}
+refreshReveals();
+gsap.utils.toArray('.step-item').forEach((el,i)=>{
+  gsap.set(el,{opacity:0,x:-24});
+  gsap.to(el,{opacity:1,x:0,duration:0.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%'},delay:i*0.06});
+});
+gsap.set('.hero-content > *', {opacity:0,y:26});
+gsap.to('.hero-content > *', {opacity:1,y:0,duration:1,stagger:0.12,ease:'power3.out',delay:0.2});
+
+/* ================= INTERACTIVE + FUNCTIONAL DEMO ================= */
+let demoState = {
+  interest:'cricket', stepIndex:0, transcript:'', verdict:null, listening:false,
+  currentExplanation:'',   // stores the live Groq-generated explanation for Prompt B
+  missingPart:'',          // stores missing_or_wrong_part from Prompt B for Prompt C
+  reteachCount:0,          // caps adaptive re-teach at 2 attempts
+  loading:false            // disables nav during API fetches
+};
+let recognition = null;
+const hasSTT = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+const hasTTS = !!window.speechSynthesis;
+
+/* Show an animated loading bubble inside the demo body */
+function showLoadingState(msg){
+  const body = document.getElementById('demoBody');
+  body.innerHTML = `<div class="bubble" style="display:flex;align-items:center;gap:14px;">
+    <span class="eq" style="display:flex;">
+      <span style="animation-play-state:running;height:6px;animation-delay:0s"></span>
+      <span style="animation-play-state:running;height:10px;animation-delay:.1s"></span>
+      <span style="animation-play-state:running;height:5px;animation-delay:.2s"></span>
+      <span style="animation-play-state:running;height:9px;animation-delay:.3s"></span>
+    </span>
+    <span style="opacity:.85;font-style:italic;">${msg}</span>
+  </div>`;
+}
+
+/* Lock/unlock nav arrows during API fetches */
+function setNavLock(locked){
+  demoState.loading = locked;
+  document.getElementById('demoPrev').disabled = locked || demoState.stepIndex===0;
+  document.getElementById('demoNext').disabled = locked || demoState.stepIndex===3;
+}
+
+/* Fetch explanation from /api/explain (Prompt A or C) */
+async function fetchExplanation({ topic, interest, lang, mode='explain', previousAnalogy='', missingPart='' }){
+  const res = await fetch('/api/explain', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ topic, interest, lang, mode, previousAnalogy, missingPart })
+  });
+  if(!res.ok) throw new Error('explain API error');
+  const data = await res.json();
+  return data.explanation || '';
+}
+
+/* Fetch evaluation from /api/evaluate (Prompt B) */
+async function fetchEvaluation({ topic, explanation, transcript, lang }){
+  const res = await fetch('/api/evaluate', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ topic, explanation, transcript, lang })
+  });
+  if(!res.ok) throw new Error('evaluate API error');
+  return await res.json(); // { understood, correct_parts, missing_or_wrong_part, encouragement_line }
+}
+
+/* Called when user submits their teach-back — handles full eval + step transition */
+async function handleTeachBack(text, lang){
+  if(!text || !text.trim()) return;
+  demoState.transcript = text.trim();
+  setNavLock(true);
+  setStep(3); // go to step 4 immediately to show loading there
+  const d = translations[lang].demo;
+  showLoadingState(d.loadingEval);
+  try {
+    const result = await fetchEvaluation({
+      topic: d.topicName,
+      explanation: demoState.currentExplanation,
+      transcript: demoState.transcript,
+      lang
+    });
+    if (demoState.stepIndex !== 3) return; // Guard: user moved away
+    demoState.missingPart = result.missing_or_wrong_part || '';
+    demoState.verdict = result.understood ? 'mastery' : 'gap';
+    demoState.verdictData = result; // store full response
+  } catch(e){
+    console.error('evaluate error:', e);
+    if (demoState.stepIndex !== 3) return; // Guard: user moved away
+    demoState.verdict = 'error_eval';
+  }
+  setNavLock(false);
+  renderDemo();
+}
+
+function speak(text, lang){
+  if(!hasTTS) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
+  utt.lang = langLocale[lang] || 'en-IN';
+  const voices = window.speechSynthesis.getVoices();
+  const match = voices.find(v=> v.lang === utt.lang) || voices.find(v=> v.lang.startsWith(lang));
+  if(match) utt.voice = match;
+  window.speechSynthesis.speak(utt);
+}
+
+function renderDots(){
+  const wrap = document.getElementById('demoDots');
+  wrap.innerHTML='';
+  for(let i=0;i<4;i++){
+    const b = document.createElement('button');
+    b.className = 'hoverable' + (i===demoState.stepIndex? ' on':'');
+    b.addEventListener('click', ()=> setStep(i));
+    wrap.appendChild(b);
+  }
+  bindHoverables();
+}
+
+function setStep(i){
+  demoState.stepIndex = i;
+  document.querySelectorAll('.step-item').forEach((el,idx)=> el.classList.toggle('active', idx===i));
+  document.getElementById('demoPrev').disabled = i===0;
+  document.getElementById('demoNext').disabled = i===3;
+  renderDemo();
+}
+document.getElementById('demoPrev').addEventListener('click', ()=> setStep(Math.max(0, demoState.stepIndex-1)));
+document.getElementById('demoNext').addEventListener('click', ()=> setStep(Math.min(3, demoState.stepIndex+1)));
+document.querySelectorAll('.step-item').forEach(el=> el.addEventListener('click', ()=> setStep(parseInt(el.dataset.step))));
+
+function renderDemo(){
+  const d = translations[currentLang].demo;
+  document.getElementById('demoStepLabel').textContent = d.stepLabels[demoState.stepIndex];
+  const body = document.getElementById('demoBody');
+  let html = '';
+
+  if(demoState.stepIndex===0){
+    html = `<div class="bubble">${d.topicLabel} <b>${d.topicName}</b><br>${d.chooseWorld}</div>
+      <div class="chip-row">
+        ${['cricket','farming','gaming','bollywood'].map(k=>`<button class="chip hoverable ${demoState.interest===k?'selected':''}" data-interest="${k}">${d.interestLabels[k]}</button>`).join('')}
+      </div>`;
+    body.innerHTML = html;
+  } else if(demoState.stepIndex===1){
+    // Always fetch fresh from Groq when landing on step 2
+    // If we already have an explanation for this interest+lang session, reuse it
+    if(demoState.currentExplanation){
+      html = renderExplanationStep(demoState.currentExplanation, d);
+      body.innerHTML = html;
+    } else {
+      showLoadingState(d.loadingExplain);
+      setNavLock(true);
+      fetchExplanation({ topic: d.topicName, interest: demoState.interest, lang: currentLang })
+        .then(explanation => {
+          if (demoState.stepIndex !== 1) return; // Guard: user moved away
+          demoState.currentExplanation = explanation;
+          setNavLock(false);
+          body.innerHTML = renderExplanationStep(explanation, d);
+          renderDots();
+          bindHoverables();
+          attachStepEvents();
+        })
+        .catch(() => {
+          if (demoState.stepIndex !== 1) return; // Guard: user moved away
+          setNavLock(false);
+          body.innerHTML = `<div class="bubble">${d.errorExplain}</div>`;
+          renderDots();
+          bindHoverables();
+        });
+    }
+  } else if(demoState.stepIndex===2){
+    const expText = demoState.currentExplanation || '...';
+    html = `<div class="bubble">${expText}</div>
+      <p style="margin-top:16px;font-size:.9rem;color:var(--peach-soft)">${hasSTT? d.speakPrompt : d.micUnsupported}</p>
+      <div class="mic-demo" style="margin-top:10px;">
+        <div class="mic-btn hoverable" id="micBtn"><div class="ring"></div><div class="ring"></div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z" fill="#F6EEE0"/><path d="M19 11a7 7 0 01-14 0M12 18v3" stroke="#F6EEE0" stroke-width="1.6"/></svg>
+        </div>
+        <div class="wave-bars" id="waveBars"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="live-transcript" id="liveTranscript">${demoState.transcript || ''}</div>
+      ${!hasSTT ? `<div class="fallback-input"><input type="text" id="fallbackInput" placeholder="${d.typeFallbackPlaceholder}" value="${demoState.transcript||''}"><button class="btn btn-primary btn-sm hoverable" id="fallbackSubmit">${d.submitLabel}</button></div>` : ''}
+      ${hasSTT && demoState.transcript ? `<button class="btn btn-primary btn-sm hoverable" id="checkBtn" style="margin-top:14px;">${d.submitLabel}</button>` : ''}`;
+    body.innerHTML = html;
+  } else if(demoState.stepIndex===3){
+    if(!demoState.verdict){
+      html = `<div class="verdict"><div class="verdict-icon">?</div><div class="verdict-text">${d.waitingForAnswer}</div></div>
+        <button class="btn btn-ghost btn-sm hoverable" id="goSpeakBtn" style="margin-top:16px;">${d.goSpeak}</button>`;
+    } else if(demoState.verdict==='gap'){
+      const encLine = demoState.verdictData?.encouragement_line || '';
+      const missingNote = demoState.missingPart ? `<br><span style="opacity:.75;font-size:.9em">${demoState.missingPart}</span>` : '';
+      html = `<div class="bubble mine">${d.teachbackHeard} "${demoState.transcript}"</div>
+        <div class="verdict gap" style="margin-top:14px;"><div class="verdict-icon">!</div><div class="verdict-text">${encLine}${missingNote}</div></div>
+        ${demoState.reteachExplanation ? `<div class="bubble" style="margin-top:14px;">${demoState.reteachExplanation}</div>` : ''}
+        ${demoState.reteachCount < 2 ? `<button class="btn btn-primary btn-sm hoverable" id="tryAgainBtn" style="margin-top:16px;">${d.tryAgain}</button>` : `<button class="btn btn-ghost btn-sm hoverable" id="newInterestBtn" style="margin-top:16px;">${d.newInterest}</button>`}`;
+    } else if(demoState.verdict==='error_eval'){
+      html = `<div class="verdict gap" style="margin-top:14px;"><div class="verdict-icon">!</div><div class="verdict-text">${d.errorEval}</div></div>
+        <button class="btn btn-primary btn-sm hoverable" id="tryAgainBtn" style="margin-top:16px;">${d.tryAgain}</button>`;
+    } else {
+      const encLine = demoState.verdictData?.encouragement_line || '';
+      html = `<div class="bubble mine">${d.teachbackHeard} "${demoState.transcript}"</div>
+        <div class="verdict" style="margin-top:14px;"><div class="verdict-icon">&#10003;</div><div class="verdict-text">${d.masteryText} &#127881;${encLine ? `<br><span style="opacity:.75;font-size:.9em;font-style:italic">${encLine}</span>` : ''}</div></div>
+        <button class="btn btn-ghost btn-sm hoverable" id="newInterestBtn" style="margin-top:16px;">${d.newInterest}</button>`;
+    }
+    body.innerHTML = html;
+  }
+  renderDots();
+  bindHoverables();
+  attachStepEvents();
+}
+
+/* Helper: renders the explanation bubble + listen button for step 2 */
+function renderExplanationStep(explanation, d){
+  return `<div class="bubble">${explanation}</div>
+    <button class="listen-btn hoverable" id="listenBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z" fill="currentColor"/><path d="M19 11a7 7 0 01-14 0M12 18v3" stroke="currentColor" stroke-width="1.6"/></svg>
+      ${d.listenLabel}
+      <span class="eq"><span style="height:6px;animation-delay:0s"></span><span style="height:10px;animation-delay:.1s"></span><span style="height:5px;animation-delay:.2s"></span><span style="height:9px;animation-delay:.3s"></span></span>
+    </button>`;
+}
+
+function attachStepEvents(){
+  document.querySelectorAll('#demoBody .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      if(chip.dataset.interest !== demoState.interest){
+        demoState.interest = chip.dataset.interest;
+        demoState.currentExplanation = '';
+        demoState.transcript = '';
+        demoState.verdict = null;
+        demoState.verdictData = null;
+        demoState.missingPart = '';
+        demoState.reteachCount = 0;
+        demoState.reteachExplanation = '';
+      }
+      renderDemo();
+    });
+  });
+  const listenBtn = document.getElementById('listenBtn');
+  if(listenBtn) listenBtn.addEventListener('click', ()=>{
+    listenBtn.classList.add('speaking');
+    speak(demoState.currentExplanation || '', currentLang);
+    setTimeout(()=>listenBtn.classList.remove('speaking'), 5000);
+  });
+  const micBtn = document.getElementById('micBtn');
+  if(micBtn) micBtn.addEventListener('click', ()=>toggleListening());
+  const checkBtn = document.getElementById('checkBtn');
+  if(checkBtn) checkBtn.addEventListener('click', ()=>{ handleTeachBack(demoState.transcript, currentLang); });
+  const fallbackSubmit = document.getElementById('fallbackSubmit');
+  if(fallbackSubmit) fallbackSubmit.addEventListener('click', ()=>{
+    const val = document.getElementById('fallbackInput').value.trim();
+    if(!val) return;
+    handleTeachBack(val, currentLang);
+  });
+  const goSpeakBtn = document.getElementById('goSpeakBtn');
+  if(goSpeakBtn) goSpeakBtn.addEventListener('click', ()=>setStep(2));
+  const tryAgainBtn = document.getElementById('tryAgainBtn');
+  if(tryAgainBtn) tryAgainBtn.addEventListener('click', async ()=>{
+    const d = translations[currentLang].demo;
+    demoState.transcript = '';
+    demoState.verdict = null;
+    demoState.verdictData = null;
+    if(demoState.missingPart && demoState.reteachCount < 2){
+      demoState.reteachCount++;
+      setStep(2);
+      setNavLock(true);
+      try {
+        const newExpl = await fetchExplanation({
+          topic: d.topicName, interest: demoState.interest, lang: currentLang,
+          mode: 'reteach', previousAnalogy: demoState.currentExplanation, missingPart: demoState.missingPart
+        });
+        demoState.currentExplanation = newExpl;
+        demoState.reteachExplanation = newExpl;
+      } catch(e){ console.warn('reteach fetch failed, reusing last explanation'); }
+      setNavLock(false);
+      renderDemo();
+    } else {
+      setStep(2);
+    }
+  });
+  const newInterestBtn = document.getElementById('newInterestBtn');
+  if(newInterestBtn) newInterestBtn.addEventListener('click', ()=>{
+    demoState.transcript='';
+    demoState.verdict=null;
+    demoState.verdictData=null;
+    demoState.currentExplanation='';
+    demoState.missingPart='';
+    demoState.reteachCount=0;
+    demoState.reteachExplanation='';
+    setStep(0);
+  });
+}
+
+function toggleListening(){
+  const micBtn = document.getElementById('micBtn');
+  const waveBars = document.getElementById('waveBars');
+  const liveTranscript = document.getElementById('liveTranscript');
+  if(!hasSTT){ return; }
+  if(demoState.listening){
+    if(recognition) recognition.stop();
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = langLocale[currentLang] || 'en-IN';
+  recognition.interimResults = true;
+  recognition.continuous = false;
+
+  recognition.onstart = ()=>{
+    demoState.listening = true;
+    micBtn.classList.add('active');
+    waveBars.classList.add('live');
+    ring.classList.add('listening');
+  };
+  recognition.onresult = (event)=>{
+    let text='';
+    for(let i=0;i<event.results.length;i++) text += event.results[i][0].transcript;
+    demoState.transcript = text;
+    if(liveTranscript) liveTranscript.textContent = text;
+  };
+  recognition.onerror = ()=>{ stopListeningUI(); };
+  recognition.onend = ()=>{
+    stopListeningUI();
+    if(demoState.transcript){ renderDemo(); }
+  };
+  recognition.start();
+}
+function stopListeningUI(){
+  demoState.listening = false;
+  const micBtn = document.getElementById('micBtn');
+  const waveBars = document.getElementById('waveBars');
+  if(micBtn) micBtn.classList.remove('active');
+  if(waveBars) waveBars.classList.remove('live');
+  ring.classList.remove('listening');
+}
+
+/* init */
+applyStaticTranslations(currentLang);
+document.getElementById('demoPrev').disabled = true;
+renderDemo();
+
+/* ================= VOICE ORB PULSE ================= */
+gsap.to('.voice-orb', { scale:1.08, duration:1.4, ease:'sine.inOut', yoyo:true, repeat:-1 });
+gsap.to('.voice-ring.r1', { scale:1.12, opacity:0, duration:2, ease:'sine.out', repeat:-1 });
+gsap.to('.voice-ring.r2', { scale:1.1, opacity:0, duration:2.4, delay:0.3, ease:'sine.out', repeat:-1 });
+gsap.to('.voice-ring.r3', { scale:1.08, opacity:0, duration:2.8, delay:0.6, ease:'sine.out', repeat:-1 });
+
+/* ================= 3D HERO ORB (Three.js) ================= */
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+  camera.position.z = 6;
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth, innerHeight);
+
+  const detail = innerWidth < 700 ? 3 : 5;
+  const geometry = new THREE.IcosahedronGeometry(1.7, detail);
+  const basePositions = geometry.attributes.position.array.slice();
+
+  const material = new THREE.MeshStandardMaterial({ color: new THREE.Color(0xC2703D), wireframe:true, transparent:true, opacity:0.55 });
+  const orb = new THREE.Mesh(geometry, material);
+  orb.position.set(innerWidth>860 ? 2.2 : 0, innerWidth>860 ? 0.2 : -1.6, 0);
+  scene.add(orb);
+
+  const innerGeo = new THREE.IcosahedronGeometry(1.15, 1);
+  const innerMat = new THREE.MeshStandardMaterial({ color:0x6E7245, wireframe:true, transparent:true, opacity:0.35 });
+  const innerOrb = new THREE.Mesh(innerGeo, innerMat);
+  orb.add(innerOrb);
+
+  const light1 = new THREE.PointLight(0xE8A87C, 2.2); light1.position.set(4,4,4); scene.add(light1);
+  const light2 = new THREE.PointLight(0x6E7245, 1.4); light2.position.set(-4,-2,3); scene.add(light2);
+  scene.add(new THREE.AmbientLight(0xF6EEE0, 0.5));
+
+  const particleCount = innerWidth < 700 ? 40 : 90;
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(particleCount*3);
+  for(let i=0;i<particleCount;i++){ pPos[i*3]=(Math.random()-0.5)*14; pPos[i*3+1]=(Math.random()-0.5)*8; pPos[i*3+2]=(Math.random()-0.5)*6-2; }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos,3));
+  const pMat = new THREE.PointsMaterial({ color:0xE8A87C, size:0.035, transparent:true, opacity:0.6 });
+  const particles = new THREE.Points(pGeo, pMat);
+  scene.add(particles);
+
+  let targetX=0, targetY=0;
+  window.addEventListener('mousemove', e=>{ targetX=(e.clientX/innerWidth-0.5)*0.6; targetY=(e.clientY/innerHeight-0.5)*0.6; });
+
+  const clock = new THREE.Clock();
+  const posAttr = geometry.attributes.position;
+  function animate(){
+    const t = clock.getElapsedTime();
+    for(let i=0;i<posAttr.count;i++){
+      const ix=i*3; const bx=basePositions[ix], by=basePositions[ix+1], bz=basePositions[ix+2];
+      const len = Math.sqrt(bx*bx+by*by+bz*bz) || 1;
+      const noise = Math.sin(t*1.3 + bx*2.4 + by*1.7) * 0.055 + Math.cos(t*0.9 + bz*2.1)*0.04;
+      const scale = 1 + noise;
+      posAttr.array[ix]=(bx/len)*len*scale; posAttr.array[ix+1]=(by/len)*len*scale; posAttr.array[ix+2]=(bz/len)*len*scale;
+    }
+    posAttr.needsUpdate = true;
+    orb.rotation.y += 0.0022;
+    orb.rotation.x = THREE.MathUtils.lerp(orb.rotation.x, targetY, 0.04);
+    orb.rotation.y += targetX*0.002;
+    innerOrb.rotation.y -= 0.004;
+    particles.rotation.y = t*0.02;
+    particles.position.x = THREE.MathUtils.lerp(particles.position.x, -targetX*1.4, 0.03);
+    particles.position.y = THREE.MathUtils.lerp(particles.position.y, -targetY*1.2, 0.03);
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
+  animate();
+  window.addEventListener('resize', ()=>{
+    camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+    orb.position.x = innerWidth>860 ? 2.2 : 0; orb.position.y = innerWidth>860 ? 0.2 : -1.6;
+  });
+})();
+</script>
+</body>
+</html>
