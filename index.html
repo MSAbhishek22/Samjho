@@ -749,7 +749,7 @@ langMenu.querySelectorAll('button').forEach(b=>{
     applyStaticTranslations(lang);
     // Full reset including explanation cache — new lang = new Groq call
     demoState = {
-      interest:'cricket', stepIndex:0, transcript:'', verdict:null, verdictData:null,
+      interest:'cricket', topic:"Newton's Third Law", stepIndex:0, transcript:'', verdict:null, verdictData:null,
       listening:false, currentExplanation:'', missingPart:'',
       reteachCount:0, reteachExplanation:'', loading:false
     };
@@ -832,7 +832,7 @@ gsap.to('.hero-content > *', {opacity:1,y:0,duration:1,stagger:0.12,ease:'power3
 
 /* ================= INTERACTIVE + FUNCTIONAL DEMO ================= */
 let demoState = {
-  interest:'cricket', stepIndex:0, transcript:'', verdict:null, listening:false,
+  interest:'cricket', topic:"Newton's Third Law", stepIndex:0, transcript:'', verdict:null, listening:false,
   currentExplanation:'',   // stores the live Groq-generated explanation for Prompt B
   missingPart:'',          // stores missing_or_wrong_part from Prompt B for Prompt C
   reteachCount:0,          // caps adaptive re-teach at 2 attempts
@@ -896,7 +896,7 @@ async function handleTeachBack(text, lang){
   showLoadingState(d.loadingEval);
   try {
     const result = await fetchEvaluation({
-      topic: d.topicName,
+      topic: demoState.topic,
       explanation: demoState.currentExplanation,
       transcript: demoState.transcript,
       lang
@@ -919,10 +919,24 @@ function speak(text, lang){
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
   utt.lang = langLocale[lang] || 'en-IN';
-  const voices = window.speechSynthesis.getVoices();
-  const match = voices.find(v=> v.lang === utt.lang) || voices.find(v=> v.lang.startsWith(lang));
-  if(match) utt.voice = match;
-  window.speechSynthesis.speak(utt);
+  
+  const setVoiceAndSpeak = () => {
+    const voices = window.speechSynthesis.getVoices();
+    if(voices.length === 0) return;
+    
+    // Desi vibe: Prioritize Indian English / Hindi voices (e.g. Heera, Ravi, Google हिन्दी, or any IN accent)
+    let match = voices.find(v => (v.lang === utt.lang || v.lang.includes('IN') || v.name.includes('India') || v.name.includes('Heera') || v.name.includes('Ravi') || v.name.includes('हिन्दी')) && v.lang.startsWith(lang));
+    if(!match) match = voices.find(v=> v.lang === utt.lang) || voices.find(v=> v.lang.startsWith(lang));
+    
+    if(match) utt.voice = match;
+    window.speechSynthesis.speak(utt);
+  };
+
+  if(window.speechSynthesis.getVoices().length > 0){
+    setVoiceAndSpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+  }
 }
 
 function renderDots(){
@@ -955,7 +969,9 @@ function renderDemo(){
   let html = '';
 
   if(demoState.stepIndex===0){
-    html = `<div class="bubble">${d.topicLabel} <b>${d.topicName}</b><br>${d.chooseWorld}</div>
+    html = `<div class="bubble" style="padding-bottom:12px">${d.topicLabel} 
+      <input type="text" id="topicInput" value="${demoState.topic}" style="background:transparent; border:none; border-bottom:1px dashed rgba(246,238,224,0.4); color:var(--cream); font-family:var(--f-body); font-weight:bold; font-size:1.05em; outline:none; width:100%; margin-top:8px; padding-bottom:4px;" placeholder="e.g. Photosynthesis">
+      <br><br>${d.chooseWorld}</div>
       <div class="chip-row">
         ${['cricket','farming','gaming','bollywood'].map(k=>`<button class="chip hoverable ${demoState.interest===k?'selected':''}" data-interest="${k}">${d.interestLabels[k]}</button>`).join('')}
       </div>
@@ -970,7 +986,7 @@ function renderDemo(){
     } else {
       showLoadingState(d.loadingExplain);
       setNavLock(true);
-      fetchExplanation({ topic: d.topicName, interest: demoState.interest, lang: currentLang })
+      fetchExplanation({ topic: demoState.topic, interest: demoState.interest, lang: currentLang })
         .then(explanation => {
           if (demoState.stepIndex !== 1) return; // Guard: user moved away
           demoState.currentExplanation = explanation;
@@ -1043,6 +1059,11 @@ function renderExplanationStep(explanation, d){
 }
 
 function attachStepEvents(){
+  const topicInput = document.getElementById('topicInput');
+  if(topicInput) topicInput.addEventListener('input', (e)=>{
+    demoState.topic = e.target.value;
+  });
+
   document.querySelectorAll('#demoBody .chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{
       if(chip.dataset.interest !== demoState.interest){
